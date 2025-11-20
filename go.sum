@@ -66,12 +66,6 @@ github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
-github.com/omnsight/omniscent-library v1.7.2-0.20251120053038-89d56e075d86 h1:zGqU563ebR4FbBFYRqxFHRQ+ahgrSzc6FPJ8op3PsuQ=
-github.com/omnsight/omniscent-library v1.7.2-0.20251120053038-89d56e075d86/go.mod h1:gPBJ3Motj8+GlnIgv8ku/+D/RxwqDwZ9+pdlZUQSkeA=
-github.com/omnsight/omniscent-library v1.7.2-0.20251120062035-663415b4a88a h1:S5BLqWgJSSNm441w38gvpB2SzPeiECZ9qHKSkTXSgYU=
-github.com/omnsight/omniscent-library v1.7.2-0.20251120062035-663415b4a88a/go.mod h1:gPBJ3Motj8+GlnIgv8ku/+D/RxwqDwZ9+pdlZUQSkeA=
-github.com/omnsight/omniscent-library v1.7.2-0.20251120072904-d26d870c3fb5 h1:HnHfIgV7d4rl0/t/H5oecMRPtFcAQYapR0Jdp4/ihIw=
-github.com/omnsight/omniscent-library v1.7.2-0.20251120072904-d26d870c3fb5/go.mod h1:gPBJ3Motj8+GlnIgv8ku/+D/RxwqDwZ9+pdlZUQSkeA=
 github.com/omnsight/omniscent-library v1.8.0 h1:LZbPksr+iDpo8KGoMUBM9HvV5CmfRikUu7b1ZFprZt0=
 github.com/omnsight/omniscent-library v1.8.0/go.mod h1:gPBJ3Motj8+GlnIgv8ku/+D/RxwqDwZ9+pdlZUQSkeA=
 github.com/opentracing/opentracing-go v1.2.0 h1:uEJPy/1a5RIPAJ0Ov+OIO8OxWu77jEv+1B0VhjKrZUs=
