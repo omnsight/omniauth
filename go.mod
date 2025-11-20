@@ -4,7 +4,7 @@ go 1.25.3
 
 require (
 	github.com/gin-gonic/gin v1.11.0
-	github.com/omnsight/omniscent-library v1.7.2-0.20251120072904-d26d870c3fb5
+	github.com/omnsight/omniscent-library v1.8.0
 	github.com/stretchr/testify v1.11.1
 )
 
