@@ -3,11 +3,14 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 
 	"github.com/omnsight/omniscent-library/src/clients"
+	"github.com/omnsight/omniscent-library/src/constants"
 	"github.com/omnsight/omniscent-library/src/middleware"
 )
 
@@ -24,7 +27,7 @@ func main() {
 
 		targetUserID := c.Param("id")
 
-		log.Printf("[Audit] Caller %s with roles %v is requesting public data of user %s", callerID, callerRoles, targetUserID)
+		logrus.Infof("[Audit] Caller %s with roles %v is requesting public data of user %s", callerID, callerRoles, targetUserID)
 
 		publicData, err := cloakHelper.GetPublicUserData(c.Request.Context(), targetUserID)
 		if err != nil {
@@ -40,8 +43,13 @@ func main() {
 		c.JSON(http.StatusOK, publicData)
 	})
 
-	log.Println("Server running on :8081")
-	if err := r.Run(":8081"); err != nil {
+	serverPort := os.Getenv(constants.ServerPort)
+	if serverPort == "" {
+		logrus.Fatalf("missing environment variable %s", constants.ServerPort)
+	}
+
+	logrus.Infof("Server running on: %s", serverPort)
+	if err := r.Run(":" + serverPort); err != nil {
 		log.Fatal(err)
 	}
 }
