@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: dev-file
+      KC_HTTP_ENABLED: true
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_URL: http://localhost:8080
+    ports:
+      - "8080:8080"
+    command:
+      - start-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  init-keycloak:
+    image: curlimages/curl:latest
+    container_name: init-keycloak
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    environment:
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-secret}
+    volumes:
+      - ./scripts:/scripts
+    entrypoint: ["/scripts/init-keycloak.sh"]
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: omniauth-service
+    depends_on:
+      init-keycloak:
+        condition: service_completed_successfully
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: master
+      KEYCLOAK_CLIENT_ID: omniauth-service
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-secret}
+    ports:
+      - "8081:8081"
