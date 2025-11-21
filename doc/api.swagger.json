@@ -27,28 +27,57 @@
     "application/json"
   ],
   "paths": {
-    "/v1/users": {
+    "/users/{id}": {
       "get": {
-        "operationId": "UserService_GetUser",
+        "summary": "Get user by ID",
+        "description": "Retrieve public user data by user ID",
+        "operationId": "getUserById",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "A successful response with user data.",
             "schema": {
-              "$ref": "#/definitions/v1GetUserResponse"
+              "$ref": "#/definitions/PublicUserData"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string"
+                }
+              }
             }
           },
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string"
+                }
+              }
             }
           }
         },
         "parameters": [
           {
-            "name": "userId",
-            "in": "query",
-            "required": false,
+            "name": "id",
+            "in": "path",
+            "required": true,
             "type": "string"
           }
         ],
@@ -59,68 +88,25 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "@type": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": {}
-    },
-    "rpcStatus": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/protobufAny"
-          }
-        }
-      }
-    },
-    "v1GetUserResponse": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/v1User"
-        }
-      }
-    },
-    "v1User": {
+    "PublicUserData": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "title": "basic info"
-        },
-        "name": {
           "type": "string"
         },
-        "password": {
+        "username": {
           "type": "string"
         },
-        "role": {
-          "$ref": "#/definitions/v1UserRole",
-          "title": "special"
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
         }
       }
-    },
-    "v1UserRole": {
-      "type": "string",
-      "enum": [
-        "USER_ROLE_USER_UNSPECIFIED",
-        "USER_ROLE_ADMIN"
-      ],
-      "default": "USER_ROLE_USER_UNSPECIFIED"
     }
   }
 }
