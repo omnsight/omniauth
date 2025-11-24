@@ -2,39 +2,55 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
+
+	"github.com/Nerzal/gocloak/v13"
+	"github.com/omnsight/omniscent-library/src/clients"
 )
-
-// MockCloakHelper is a mock implementation of CloakHelperInterface
-type MockCloakHelper struct {
-	mock.Mock
-	ClientID string
-}
-
-// GetPublicUserData mocks the GetPublicUserData method
-func (m *MockCloakHelper) GetPublicUserData(ctx context.Context, userID string) (map[string]interface{}, error) {
-	args := m.Called(ctx, userID)
-	result, _ := args.Get(0).(map[string]interface{})
-	return result, args.Error(1)
-}
 
 // TestGetUser tests the GET /users/:id endpoint
 func TestGetUser(t *testing.T) {
 	// Set Gin to test mode
 	gin.SetMode(gin.TestMode)
 
-	t.Run("successful user retrieval", func(t *testing.T) {
-		// Create a mock CloakHelper
-		mockCloakHelper := new(MockCloakHelper)
+	// Check if we're running in docker compose environment
+	keycloakURL := os.Getenv("KEYCLOAK_URL")
+	if keycloakURL == "" {
+		t.Skip("Skipping integration test: KEYCLOAK_URL not set")
+	}
 
+	// Create a real CloakHelper
+	cloakHelper := clients.NewCloakHelper()
+
+	// Login to get access token
+	jwt, err := cloakHelper.Client.LoginClient(context.Background(), cloakHelper.ClientID, cloakHelper.ClientSecret, cloakHelper.Realm)
+	if err != nil {
+		t.Fatalf("Failed to login client: %v", err)
+	}
+
+	// Create a test user for testing
+	testUserName := "test123"
+	user := gocloak.User{
+		Username:      &testUserName,
+		FirstName:     gocloak.StringP("Test"),
+		LastName:      gocloak.StringP("User"),
+		Email:         gocloak.StringP("test@example.com"),
+		EmailVerified: gocloak.BoolP(true),
+		Enabled:       gocloak.BoolP(true),
+	}
+
+	testUserId, err := cloakHelper.Client.CreateUser(context.Background(), jwt.AccessToken, cloakHelper.Realm, user)
+	if err != nil {
+		t.Logf("Warning: Could not create test user: %v", err)
+	}
+
+	t.Run("successful user retrieval", func(t *testing.T) {
 		// Create a test server
 		router := gin.New()
 
@@ -46,48 +62,19 @@ func TestGetUser(t *testing.T) {
 		})
 
 		// Register the handler
-		router.GET("/users/:id", func(c *gin.Context) {
-			targetUserID := c.Param("id")
-
-			publicData := map[string]interface{}{
-				"id":       targetUserID,
-				"username": fmt.Sprintf("user-%s", targetUserID),
-			}
-
-			mockCloakHelper.On("GetPublicUserData", c.Request.Context(), targetUserID).Return(publicData, nil)
-
-			result, err := mockCloakHelper.GetPublicUserData(c.Request.Context(), targetUserID)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error fetching user data"})
-				return
-			}
-
-			c.JSON(http.StatusOK, result)
-		})
+		router.GET("/users/:id", getUserHandler(cloakHelper))
 
 		// Create a request
-		req, _ := http.NewRequest("GET", "/users/test123", nil)
+		req, _ := http.NewRequest("GET", "/users/"+testUserId, nil)
 		w := httptest.NewRecorder()
 
 		// Perform the request
 		router.ServeHTTP(w, req)
 
-		// Assert the response
-		assert.Equal(t, http.StatusOK, w.Code)
-
-		var response map[string]interface{}
-		err := json.Unmarshal(w.Body.Bytes(), &response)
-		assert.NoError(t, err)
-		assert.Equal(t, "test123", response["id"])
-		assert.Equal(t, "user-test123", response["username"])
-
-		mockCloakHelper.AssertExpectations(t)
+		assert.True(t, w.Code == http.StatusOK)
 	})
 
 	t.Run("user not found", func(t *testing.T) {
-		// Create a mock CloakHelper
-		mockCloakHelper := new(MockCloakHelper)
-
 		// Create a test server
 		router := gin.New()
 
@@ -99,40 +86,15 @@ func TestGetUser(t *testing.T) {
 		})
 
 		// Register the handler
-		router.GET("/users/:id", func(c *gin.Context) {
-			targetUserID := c.Param("id")
+		router.GET("/users/:id", getUserHandler(cloakHelper))
 
-			// Mock the not found error
-			mockCloakHelper.On("GetPublicUserData", c.Request.Context(), targetUserID).Return((map[string]interface{})(nil), fmt.Errorf("404 Not Found"))
-
-			result, err := mockCloakHelper.GetPublicUserData(c.Request.Context(), targetUserID)
-			if err != nil {
-				if fmt.Sprintf("%v", err) == "404 Not Found" {
-					c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-				} else {
-					c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error fetching user data"})
-				}
-				return
-			}
-
-			c.JSON(http.StatusOK, result)
-		})
-
-		// Create a request
+		// Create a request for a non-existent user
 		req, _ := http.NewRequest("GET", "/users/nonexistent", nil)
 		w := httptest.NewRecorder()
 
 		// Perform the request
 		router.ServeHTTP(w, req)
 
-		// Assert the response
-		assert.Equal(t, http.StatusNotFound, w.Code)
-
-		var response map[string]string
-		err := json.Unmarshal(w.Body.Bytes(), &response)
-		assert.NoError(t, err)
-		assert.Equal(t, "user not found", response["error"])
-
-		mockCloakHelper.AssertExpectations(t)
+		assert.True(t, w.Code == http.StatusNotFound)
 	})
 }

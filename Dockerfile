@@ -9,14 +9,16 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./src/main.go
 
-FROM alpine:latest
+FROM golang:1.25-alpine
 
-RUN apk --no-cache add ca-certificates
+WORKDIR /app
 
-WORKDIR /root/
+COPY go.mod go.sum ./
+RUN go mod download
 
-COPY --from=builder /app/main .
+COPY . .
 
-EXPOSE 8081
+EXPOSE 8080
 
-CMD ["./main"]
+# For development, keep the source and Go tools available
+CMD ["tail", "-f", "/dev/null"]

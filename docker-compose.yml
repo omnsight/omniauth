@@ -1,38 +1,43 @@
-version: '3.8'
-
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:25.0
-    container_name: keycloak
+    image: quay.io/keycloak/keycloak:latest
+    container_name: omni_keycloak
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_DB: dev-file
-      KC_HTTP_ENABLED: true
-      KC_HOSTNAME_STRICT: false
-      KC_HOSTNAME_URL: http://localhost:8080
+      KC_DB_PATH: /opt/keycloak/data/h2
+      KC_HEALTH_ENABLED: "true"
     ports:
       - "8080:8080"
-    command:
-      - start-dev
+      - "9090:9090"
+    command: start-dev
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
+      test:
+        - "CMD-SHELL"
+        - "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost:9000\\r\\nConnection: close\\r\\n\\r\\n' >&3; grep -q '200 OK' <&3 && exit 0 || exit 1"
+      interval: 2s
       timeout: 10s
-      retries: 3
+      retries: 5
       start_period: 60s
 
   init-keycloak:
-    image: curlimages/curl:latest
+    image: alpine:latest
     container_name: init-keycloak
     depends_on:
       keycloak:
         condition: service_healthy
     environment:
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-secret}
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: omni
+      KEYCLOAK_CLIENT_ID: omniauth-service
+      KEYCLOAK_CLIENT_SECRET: omniauth-service-secret
     volumes:
-      - ./scripts:/scripts
-    entrypoint: ["/scripts/init-keycloak.sh"]
+      - ./scripts/init-keycloak.sh:/scripts/init-keycloak.sh:z
+    entrypoint:
+      - "/bin/sh"
+      - "-c"
+      - "apk add --no-cache curl jq && /scripts/init-keycloak.sh"
 
   app:
     build:
@@ -44,8 +49,9 @@ services:
         condition: service_completed_successfully
     environment:
       KEYCLOAK_URL: http://keycloak:8080
-      KEYCLOAK_REALM: master
+      KEYCLOAK_REALM: omni
       KEYCLOAK_CLIENT_ID: omniauth-service
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-secret}
+      KEYCLOAK_CLIENT_SECRET: omniauth-service-secret
+      SERVER_PORT: "8080"
     ports:
-      - "8081:8081"
+      - "8081:8080"
