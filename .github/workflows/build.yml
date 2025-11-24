@@ -23,13 +23,27 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
+      - name: Start services
+        run: |
+          docker compose up -d
+
       - name: Run tests
+        env:
+          KEYCLOAK_URL: http://keycloak:8080
+          KEYCLOAK_REALM: omni
+          KEYCLOAK_CLIENT_ID: omniauth-service
+          KEYCLOAK_CLIENT_SECRET: omniauth-service-secret
         run: |
           go test -v ./...
 
       - name: Build service
         run: |
           go build -o omnauth ./src/main.go
+
+      - name: Stop services
+        if: always()
+        run: |
+          docker compose down
 
       - name: Commit and push generated files
         uses: stefanzweifel/git-auto-commit-action@v5
