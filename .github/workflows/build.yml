@@ -29,7 +29,7 @@ jobs:
 
       - name: Run tests
         env:
-          KEYCLOAK_URL: http://keycloak:8080
+          KEYCLOAK_URL: http://localhost:8080
           KEYCLOAK_REALM: omni
           KEYCLOAK_CLIENT_ID: omniauth-service
           KEYCLOAK_CLIENT_SECRET: omniauth-service-secret
