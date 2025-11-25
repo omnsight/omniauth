@@ -40,7 +40,7 @@ go mod tidy
 Run unit tests. You can view arangodb dashboard at http://localhost:8529.
 
 ```bash
-docker-compose up -d
+docker-compose up -d --wait
 export KEYCLOAK_URL=http://localhost:8080
 export KEYCLOAK_REALM=omni
 export KEYCLOAK_CLIENT_ID=omniauth-service
@@ -50,6 +50,8 @@ docker-compose down
 
 docker logs <container_name>
 docker inspect --format "{{json .State.Health}}" <container_name> | jq
+
+docker system prune -a --volumes
 ```
 
 Build a docker image locally for testing:
