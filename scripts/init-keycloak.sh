@@ -114,3 +114,12 @@ echo "✅ Service account granted 'view-users' permission."
 
 #####################################################################################################################
 echo "✅ Initialization complete."
+
+# Disable SSL requirement for the realm to allow HTTP connections
+echo "Disabling SSL requirement for the realm..."
+curl -s -X PUT "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"sslRequired": "NONE"}'
+
+echo "✅ SSL requirement disabled for the realm."

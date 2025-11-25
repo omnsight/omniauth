@@ -16,12 +16,12 @@ import (
 // getUserHandler handles the GET /users/:id endpoint
 func getUserHandler(cloakHelper *clients.CloakHelper) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		callerID := c.GetString("userID")
-		callerRoles := c.GetStringSlice("userRoles")
+		callerID := c.GetString(middleware.UserIDKey)
+		callerRoles := c.GetStringSlice(middleware.UserRolesKey)
 
 		targetUserID := c.Param("id")
 
-		logrus.Infof("[Audit] Caller %s with roles %v is requesting public data of user %s", callerID, callerRoles, targetUserID)
+		logrus.Infof("[%s, %v] requests to get public data of user %s", callerID, callerRoles, targetUserID)
 
 		publicData, err := cloakHelper.GetPublicUserData(c.Request.Context(), targetUserID)
 		if err != nil {

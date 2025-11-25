@@ -3,14 +3,14 @@ module github.com/omnsight/omnauth
 go 1.25.3
 
 require (
+	github.com/Nerzal/gocloak/v13 v13.9.0
 	github.com/gin-gonic/gin v1.11.0
-	github.com/omnsight/omniscent-library v1.10.2-0.20251123061214-a0ed6fd38b3f
+	github.com/omnsight/omniscent-library v1.11.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.11.1
 )
 
 require (
-	github.com/Nerzal/gocloak/v13 v13.9.0 // indirect
 	github.com/arangodb/go-driver v1.6.9 // indirect
 	github.com/arangodb/go-velocypack v0.0.0-20200318135517-5af53c29c67e // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
@@ -23,7 +23,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.28.0 // indirect
-	github.com/go-resty/resty/v2 v2.16.5 // indirect
+	github.com/go-resty/resty/v2 v2.17.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
@@ -48,7 +48,7 @@ require (
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251111163417-95abcf5c77ba // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251124214823-79d6a2a48846 // indirect
 	google.golang.org/grpc v1.77.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
