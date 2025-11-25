@@ -25,7 +25,7 @@ jobs:
 
       - name: Start services
         run: |
-          docker compose up -d
+          docker compose up -d --wait
 
       - name: Run tests
         env:

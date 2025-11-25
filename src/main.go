@@ -39,18 +39,22 @@ func getUserHandler(cloakHelper *clients.CloakHelper) gin.HandlerFunc {
 }
 
 func main() {
-	cloakHelper := clients.NewCloakHelper()
-
-	r := gin.Default()
-
-	r.Use(middleware.AuthMiddleware(cloakHelper.ClientID))
-
-	r.GET("/users/:id", getUserHandler(cloakHelper))
-
 	serverPort := os.Getenv(constants.ServerPort)
 	if serverPort == "" {
 		logrus.Fatalf("missing environment variable %s", constants.ServerPort)
 	}
+
+	cloakHelper := clients.NewCloakHelper()
+	r := gin.Default()
+
+	// Add other Gin routes as needed
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	api := r.Group("/")
+	api.Use(middleware.AuthMiddleware(cloakHelper.ClientID))
+	api.GET("/users/:id", getUserHandler(cloakHelper))
 
 	logrus.Infof("Server running on: %s", serverPort)
 	if err := r.Run(":" + serverPort); err != nil {
