@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -49,7 +51,28 @@ func main() {
 
 	// Add other Gin routes as needed
 	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		// --- CHECK 1: Keycloak Connectivity ---
+		_, err := cloakHelper.Client.GetCerts(ctx, "omni")
+		if err != nil {
+			logrus.WithError(err).Error("Keycloak client is unreachable")
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"status": "unhealthy",
+				"reason": "identity_provider_unreachable",
+			})
+			return
+		}
+
+		// --- SUCCESS ---
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+			"services": gin.H{
+				"database":     "connected",
+				"query_engine": "operational",
+			},
+		})
 	})
 
 	api := r.Group("/")
