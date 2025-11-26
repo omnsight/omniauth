@@ -55,7 +55,7 @@ func main() {
 		defer cancel()
 
 		// --- CHECK 1: Keycloak Connectivity ---
-		_, err := cloakHelper.Client.GetCerts(ctx, "omni")
+		_, err := cloakHelper.Client.GetCerts(ctx, "master")
 		if err != nil {
 			logrus.WithError(err).Error("Keycloak client is unreachable")
 			c.JSON(http.StatusServiceUnavailable, gin.H{
