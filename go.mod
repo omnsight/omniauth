@@ -5,7 +5,7 @@ go 1.25.3
 require (
 	github.com/Nerzal/gocloak/v13 v13.9.0
 	github.com/gin-gonic/gin v1.11.0
-	github.com/omnsight/omniscent-library v1.11.4
+	github.com/omnsight/omniscent-library v1.11.5
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.11.1
 )
