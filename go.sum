@@ -72,6 +72,8 @@ github.com/omnsight/omniscent-library v1.11.1 h1:wZwVGMic3OI6YOHFX8oXMS0XUDu7V6G
 github.com/omnsight/omniscent-library v1.11.1/go.mod h1:gPBJ3Motj8+GlnIgv8ku/+D/RxwqDwZ9+pdlZUQSkeA=
 github.com/omnsight/omniscent-library v1.11.4 h1:ZisWQ1L+H5wL7ru70nDA11jh59B3pXGeXLVOYy4wSwQ=
 github.com/omnsight/omniscent-library v1.11.4/go.mod h1:gPBJ3Motj8+GlnIgv8ku/+D/RxwqDwZ9+pdlZUQSkeA=
+github.com/omnsight/omniscent-library v1.11.5 h1:0ihDZi21Ffz+B2p2igAnUYnivzwUVqjP9sseb5QZn24=
+github.com/omnsight/omniscent-library v1.11.5/go.mod h1:gPBJ3Motj8+GlnIgv8ku/+D/RxwqDwZ9+pdlZUQSkeA=
 github.com/opentracing/opentracing-go v1.2.0 h1:uEJPy/1a5RIPAJ0Ov+OIO8OxWu77jEv+1B0VhjKrZUs=
 github.com/opentracing/opentracing-go v1.2.0/go.mod h1:GxEUsuufX4nBwe+T+Wl9TAgYrxe9dPLANfrWvHYVTgc=
 github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
