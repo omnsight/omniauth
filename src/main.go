@@ -2,52 +2,103 @@ package main
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 
-	"github.com/omnsight/omniscent-library/src/clients"
-	"github.com/omnsight/omniscent-library/src/constants"
-	"github.com/omnsight/omniscent-library/src/middleware"
+	gwRuntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/omnsight/omnauth/gen/oauth/v1"
+	"github.com/omnsight/omnauth/src/utils"
 )
 
-// getUserHandler handles the GET /users/:id endpoint
-func getUserHandler(cloakHelper *clients.CloakHelper) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		callerID := c.GetString(middleware.UserIDKey)
-		callerRoles := c.GetStringSlice(middleware.UserRolesKey)
-
-		targetUserID := c.Param("id")
-
-		logrus.Infof("[%s, %v] requests to get public data of user %s", callerID, callerRoles, targetUserID)
-
-		publicData, err := cloakHelper.GetPublicUserData(c.Request.Context(), targetUserID)
-		if err != nil {
-			if strings.Contains(err.Error(), "404") {
-				c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			} else {
-				logrus.WithError(err).Error("Error fetching user")
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error fetching user data"})
-			}
-			return
-		}
-
-		c.JSON(http.StatusOK, publicData)
-	}
-}
-
 func main() {
-	serverPort := os.Getenv(constants.ServerPort)
-	if serverPort == "" {
-		logrus.Fatalf("missing environment variable %s", constants.ServerPort)
+	// ---- 1. Start the gRPC Server (your logic) ----
+	// Get gRPC address from environment variable or use default
+	grpcPort := os.Getenv(utils.GrpcPort)
+	if grpcPort == "" {
+		logrus.Fatalf("missing environment variable %s", utils.GrpcPort)
 	}
 
-	cloakHelper := clients.NewCloakHelper()
-	r := gin.Default()
+	serverPort := os.Getenv(utils.ServerPort)
+	if serverPort == "" {
+		logrus.Fatalf("missing environment variable %s", utils.ServerPort)
+	}
+
+	clientId := os.Getenv(utils.KeycloakClientID)
+	if clientId == "" {
+		logrus.Fatalf("missing environment variable %s", utils.KeycloakClientID)
+	}
+
+	// Create a gRPC server
+	gRPCServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(utils.LoggingInterceptor, utils.GrpcGatewayIdentityInterceptor(clientId)),
+	)
+
+	cloakHelper := utils.NewCloakHelper()
+
+	// Register your business logic implementation with the gRPC server
+	authService, err := NewAuthService(cloakHelper)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Fatal("failed to create AuthService")
+	}
+	oauth.RegisterAuthServiceServer(gRPCServer, authService)
+
+	// Enable reflection for debugging
+	reflection.Register(gRPCServer)
+
+	// Start the gRPC server in a separate goroutine
+	go func() {
+		lis, _ := net.Listen("tcp", ":"+grpcPort)
+		gRPCServer.Serve(lis)
+	}()
+
+	// ---- 2. Start the gRPC-Gateway (the connection) ----
+	ctx := context.Background()
+
+	// Create a client connection to the gRPC server
+	// The gateway acts as a client - using NewClient instead of deprecated DialContext
+	conn, err := grpc.NewClient(
+		"localhost:"+grpcPort,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Fatal("failed to create gRPC client")
+	}
+	defer conn.Close()
+
+	// Create the gRPC-Gateway's multiplexer (router)
+	// This mux knows how to translate HTTP routes (from proto definitions) to gRPC calls
+	gwmux := gwRuntime.NewServeMux()
+
+	// Register all service handlers with the gateway's router
+	if err := oauth.RegisterAuthServiceHandler(ctx, gwmux, conn); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Fatal("failed to register AuthService handler")
+	}
+
+	// ---- 3. Start the Gin Server (the HTTP entrypoint) ----
+	// Create a Gin router
+	r := gin.New()
+	r.Use(gin.Recovery())
+	r.Use(gin.LoggerWithConfig(gin.LoggerConfig{
+		SkipPaths: []string{"/health"},
+	}))
+
+	// Tell Gin to proxy any requests on /v1/* to the gRPC-Gateway
+	// THIS IS THE "CONNECTION"
+	r.Any("/v1/*any", gin.WrapH(gwmux))
 
 	// Add other Gin routes as needed
 	r.GET("/health", func(c *gin.Context) {
@@ -55,7 +106,7 @@ func main() {
 		defer cancel()
 
 		// --- CHECK 1: Keycloak Connectivity ---
-		_, err := cloakHelper.Client.GetCerts(ctx, "master")
+		_, err = cloakHelper.Client.GetCerts(ctx, "master")
 		if err != nil {
 			logrus.WithError(err).Error("Keycloak client is unreachable")
 			c.JSON(http.StatusServiceUnavailable, gin.H{
@@ -75,12 +126,6 @@ func main() {
 		})
 	})
 
-	api := r.Group("/")
-	api.Use(middleware.AuthMiddleware(cloakHelper.ClientID))
-	api.GET("/users/:id", getUserHandler(cloakHelper))
-
-	logrus.Infof("Server running on: %s", serverPort)
-	if err := r.Run(":" + serverPort); err != nil {
-		logrus.WithError(err).Fatal("Error starting server")
-	}
+	// Run the Gin server
+	r.Run(":" + serverPort)
 }

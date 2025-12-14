@@ -28,17 +28,8 @@ jobs:
           docker compose up -d --wait
 
       - name: Run tests
-        env:
-          KEYCLOAK_URL: http://localhost:8080
-          KEYCLOAK_REALM: omni
-          KEYCLOAK_CLIENT_ID: omniauth-service
-          KEYCLOAK_CLIENT_SECRET: omniauth-service-secret
         run: |
           go test -v ./...
-
-      - name: Build service
-        run: |
-          go build -o omnauth ./src/main.go
 
       - name: Stop services
         if: always()

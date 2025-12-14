@@ -1,0 +1,7 @@
+version: v2
+modules:
+  - path: protos
+    name: buf.build/omnsight/omniauth
+deps:
+  - buf.build/googleapis/googleapis
+  - buf.build/grpc-ecosystem/grpc-gateway

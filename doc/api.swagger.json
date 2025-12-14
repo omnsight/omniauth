@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "User API",
-    "description": "The User API handles user profile management.",
+    "title": "Auth API",
+    "description": "The Auth API handles authentication for the OmniAuth service.",
     "version": "1.0.0",
     "contact": {
       "name": "Omni Team"
@@ -14,7 +14,7 @@
   },
   "tags": [
     {
-      "name": "UserService"
+      "name": "AuthService"
     }
   ],
   "schemes": [
@@ -27,68 +27,75 @@
     "application/json"
   ],
   "paths": {
-    "/users/{id}": {
+    "/v1/users/{userId}": {
       "get": {
-        "summary": "Get user by ID",
-        "description": "Retrieve public user data by user ID",
-        "operationId": "getUserById",
+        "operationId": "AuthService_GetUser",
         "responses": {
           "200": {
-            "description": "A successful response with user data.",
+            "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/PublicUserData"
-            }
-          },
-          "404": {
-            "description": "User not found",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/v1GetUserResponse"
             }
           },
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string"
           }
         ],
         "tags": [
-          "UserService"
+          "AuthService"
         ]
       }
     }
   },
   "definitions": {
-    "PublicUserData": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1GetUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1PublicUser"
+        }
+      }
+    },
+    "v1PublicUser": {
       "type": "object",
       "properties": {
         "id": {
@@ -97,10 +104,10 @@
         "username": {
           "type": "string"
         },
-        "firstName": {
+        "firstname": {
           "type": "string"
         },
-        "lastName": {
+        "lastname": {
           "type": "string"
         },
         "email": {

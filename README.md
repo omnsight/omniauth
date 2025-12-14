@@ -41,11 +41,7 @@ Run unit tests. You can view arangodb dashboard at http://localhost:8529.
 
 ```bash
 docker-compose up -d --wait
-export KEYCLOAK_URL=http://localhost:8080
-export KEYCLOAK_REALM=omni
-export KEYCLOAK_CLIENT_ID=omniauth-service
-export KEYCLOAK_CLIENT_SECRET=omniauth-service-secret
-go test -v ./... -run <test name>
+go test -v ./...
 docker-compose down
 
 docker logs <container_name>
@@ -58,3 +54,7 @@ Build a docker image locally for testing:
 ```bash
 docker build -t omniauth-service:latest .
 ```
+
+Test user credentials:
+- Admin: admin/password
+- User: user/password
