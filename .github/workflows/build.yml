@@ -31,10 +31,6 @@ jobs:
         run: |
           go test -v ./...
 
-      - name: Build service
-        run: |
-          go build -o omnauth ./src/main.go
-
       - name: Stop services
         if: always()
         run: |
