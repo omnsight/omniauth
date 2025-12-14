@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package oauth.v1;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/omnsight/omniauth/gen/oauth/v1;oauth";
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Auth API"
+    version: "1.0.0"
+    description: "The Auth API handles authentication for the OmniAuth service."
+    contact: {
+      name: "Omni Team"
+      url: ""
+      email: ""
+    }
+    license: {
+      name: "Apache 2.0"
+      url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  }
+  // You can also set other top-level fields like schemes, host, etc.
+  schemes: [HTTPS]
+  consumes: "application/json"
+  produces: "application/json"
+};
+
+service AuthService {
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+    option (google.api.http) = {get: "/v1/users/{user_id}"};
+  }
+}
+
+message PublicUser {
+  string id = 1;
+  string username = 2;
+  string firstname = 3;
+  string lastname = 4;
+  string email = 5;
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message GetUserResponse {
+  PublicUser user = 1;
+}

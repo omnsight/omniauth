@@ -1,0 +1,32 @@
+name: Buf Release
+
+on:
+  push:
+    paths:
+      - '**.proto'
+      - '**/buf.yaml'
+      - '**/buf.lock'
+      - '**/buf.md'
+      - '**/README.md'
+      - '**/LICENSE'
+    branches:
+      - '*'
+  workflow_dispatch: # 允许手动触发
+
+permissions:
+  contents: read
+
+jobs:
+  buf:
+    name: Push to buf
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish to Buf
+        uses: bufbuild/buf-action@v1
+        with:
+          token: ${{ secrets.BUF_TOKEN }}
+          lint: ${{ github.event_name == 'push' }}
+          format: ${{ github.event_name == 'push' }}
+          breaking: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, 'buf skip breaking') }}
