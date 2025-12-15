@@ -16,6 +16,13 @@
           "attributes": {}
         },
         {
+          "name": "pro",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "attributes": {}
+        },
+        {
           "name": "user",
           "description": "",
           "composite": false,
@@ -26,6 +33,13 @@
       "omniauth": [
         {
           "name": "admin",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "attributes": {}
+        },
+        {
+          "name": "pro",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -51,10 +65,32 @@
       "realmRoles": [],
       "clientRoles": {
         "omndapi": [
-          "admin"
+          "admin",
+          "pro",
+          "user"
         ],
         "omniauth": [
-          "admin"
+          "admin",
+          "pro",
+          "user"
+        ]
+      }
+    },
+    {
+      "name": "pro-group",
+      "description": "User group for pro users",
+      "path": "/pro-group",
+      "subGroups": [],
+      "attributes": {},
+      "realmRoles": [],
+      "clientRoles": {
+        "omndapi": [
+          "pro",
+          "user"
+        ],
+        "omniauth": [
+          "pro",
+          "user"
         ]
       }
     },
