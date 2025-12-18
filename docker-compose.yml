@@ -46,7 +46,3 @@ services:
       interval: 6s
       timeout: 5s
       retries: 3
-
-networks:
-  default:
-    name: omniauth_net

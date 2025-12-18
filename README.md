@@ -37,7 +37,7 @@ go mod tidy
 
 ### Testing
 
-Run unit tests. You can view arangodb dashboard at http://localhost:8529.
+Run unit tests. You can view keycloak dashboard at http://localhost:8080.
 
 ```bash
 docker-compose up -d --wait
